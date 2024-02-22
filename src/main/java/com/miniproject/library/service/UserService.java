@@ -1,9 +1,14 @@
 package com.miniproject.library.service;
 
+import com.miniproject.library.dto.anggota.AnggotaResponse;
+import com.miniproject.library.dto.user.UserBookResponse;
 import com.miniproject.library.dto.user.UserRequest;
 import com.miniproject.library.dto.user.UserResponse;
+import com.miniproject.library.entity.Anggota;
+import com.miniproject.library.entity.Loan;
 import com.miniproject.library.entity.User;
 import com.miniproject.library.exception.ResourceNotFoundException;
+import com.miniproject.library.repository.LoanRepository;
 import com.miniproject.library.repository.UserRepository;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -24,6 +29,7 @@ public class UserService {
 
     private final UserRepository userRepository;
     private final ModelMapper mapper = new ModelMapper();
+    private final LoanRepository loanRepository;
 
     public List<UserResponse>getAll(){
         List<User> userList=userRepository.findAll();
@@ -34,7 +40,14 @@ public class UserService {
         Optional<User> userOptional = userRepository.findById(id);
         if (userOptional.isPresent()) {
             User user = userOptional.get();
-            return mapper.map(user, UserResponse.class);
+            Anggota anggota = user.getAnggota();
+            Loan userLoan = loanRepository.findLoanAnggota(anggota.getId()).orElse(null);
+            UserResponse userResponse = new UserResponse();
+            userResponse.setId(user.getId());
+            userResponse.setUsername(user.getUsername());
+            userResponse.setAnggota(mapper.map(anggota, AnggotaResponse.class));
+            userResponse.setBook(mapper.map(userLoan.getBookCarts().getBook(), List.class));
+            return userResponse;
         } else {
             throw new ResourceNotFoundException(USER_NOT_FOUND);
         }
