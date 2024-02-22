@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>PenaltyService.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">library</a> &gt; <a href="index.source.html" class="el_package">com.miniproject.library.service</a> &gt; <span class="el_source">PenaltyService.java</span></div><h1>PenaltyService.java</h1><pre class="source lang-java linenums">package com.miniproject.library.service;
+
+import com.miniproject.library.dto.penalty.PenaltyResponse;
+import com.miniproject.library.entity.Loan;
+import com.miniproject.library.entity.Penalty;
+import com.miniproject.library.exception.ResourceNotFoundException;
+import com.miniproject.library.repository.LoanRepository;
+import com.miniproject.library.repository.PenaltyRepository;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
+
+import java.util.List;
+
+
+import com.miniproject.library.repository.BookRepository;
+
+
+@Service
+<span class="fc" id="L21">@RequiredArgsConstructor</span>
+public class PenaltyService {
+    private final PenaltyRepository penaltyRepository;
+    private static final String ID_PENALTY_NOT_FOUND = &quot;Id Penalty Not Found&quot;;
+
+    public List&lt;Penalty&gt; getAllPenalties() {
+<span class="fc" id="L27">        return penaltyRepository.findAll();</span>
+    }
+
+    public PenaltyResponse createPenalty(Loan loan, Integer amount) {
+<span class="fc" id="L31">        Penalty penalty = new Penalty();</span>
+<span class="fc" id="L32">        penalty.setLoan(loan);</span>
+<span class="fc" id="L33">        penalty.setAmount(amount);</span>
+
+<span class="fc" id="L35">        penaltyRepository.save(penalty);</span>
+
+
+<span class="fc" id="L38">        return PenaltyResponse.builder()</span>
+<span class="fc" id="L39">                .id(penalty.getId())</span>
+<span class="fc" id="L40">                .amount(penalty.getAmount())</span>
+<span class="fc" id="L41">                .loanId(penalty.getLoan().getId())</span>
+<span class="fc" id="L42">                .build();</span>
+    }
+
+    public PenaltyResponse getPenaltyById(Integer id) {
+<span class="fc" id="L46">        Penalty penalty = penaltyRepository.findById(id)</span>
+<span class="fc" id="L47">                .orElseThrow(() -&gt; new ResourceNotFoundException(ID_PENALTY_NOT_FOUND));</span>
+
+<span class="fc" id="L49">        return PenaltyResponse.builder()</span>
+<span class="fc" id="L50">                .id(penalty.getId())</span>
+<span class="fc" id="L51">                .amount(penalty.getAmount())</span>
+<span class="fc" id="L52">                .loanId(penalty.getLoan().getId()) // Include the associated loan ID in the response</span>
+                // Include other relevant information in the response
+<span class="fc" id="L54">                .build();</span>
+    }
+
+    public void deletePenalty(Integer id) {
+<span class="fc bfc" id="L58" title="All 2 branches covered.">        if (penaltyRepository.existsById(id)) {</span>
+<span class="fc" id="L59">            penaltyRepository.deleteById(id);</span>
+        } else {
+<span class="fc" id="L61">            throw new ResourceNotFoundException(ID_PENALTY_NOT_FOUND);</span>
+        }
+<span class="fc" id="L63">    }</span>
+
+}
+
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

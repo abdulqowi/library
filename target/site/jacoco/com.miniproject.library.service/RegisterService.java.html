@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>RegisterService.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">library</a> &gt; <a href="index.source.html" class="el_package">com.miniproject.library.service</a> &gt; <span class="el_source">RegisterService.java</span></div><h1>RegisterService.java</h1><pre class="source lang-java linenums">package com.miniproject.library.service;
+
+import com.miniproject.library.dto.register.RegisterRequest;
+import com.miniproject.library.entity.*;
+import com.miniproject.library.exception.ResourcesBadRequestException;
+import com.miniproject.library.repository.AnggotaRepository;
+import com.miniproject.library.repository.LibrarianRepository;
+import com.miniproject.library.repository.UserRepository;
+import lombok.RequiredArgsConstructor;
+import org.modelmapper.ModelMapper;
+import org.springframework.context.annotation.Bean;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
+
+@Service
+<span class="fc" id="L17">@RequiredArgsConstructor</span>
+public class RegisterService {
+    private final UserRepository userRepository;
+    private final LibrarianRepository librarianRepository;
+    private final AnggotaRepository anggotaRepository;
+    private static final String NIK_OR_NIP_ALREADY_EXIST = &quot;NIK/NIP Already Exist&quot;;
+
+<span class="fc" id="L24">    private final ModelMapper mapper = new ModelMapper();</span>
+
+    public User register(RegisterRequest registerRequest, String role){
+<span class="fc" id="L27">        role = role.toUpperCase();</span>
+<span class="fc bfc" id="L28" title="All 2 branches covered.">        if (userRepository.findByUsername(registerRequest.getUsername()) != null){</span>
+<span class="fc" id="L29">            throw new ResourcesBadRequestException(NIK_OR_NIP_ALREADY_EXIST);</span>
+        }
+<span class="fc" id="L31">        User regis = mapper.map(registerRequest, User.class);</span>
+<span class="fc" id="L32">        regis.setPassword(passwordEncoder().encode(registerRequest.getPassword()));</span>
+<span class="fc" id="L33">        regis.setRole(Role.valueOf(role));</span>
+<span class="fc bfc" id="L34" title="All 2 branches covered.">        if (role.equals(&quot;LIBRARIAN&quot;)){</span>
+<span class="fc" id="L35">            Librarian librarian = mapper.map(registerRequest,Librarian.class);</span>
+<span class="fc" id="L36">            librarian.setNip(Long.valueOf(registerRequest.getUsername()));</span>
+<span class="fc" id="L37">            librarianRepository.save(librarian);</span>
+<span class="fc" id="L38">            regis.setLibrarian(librarian);</span>
+<span class="fc" id="L39">            regis.setAnggota(null);</span>
+<span class="fc" id="L40">        }else {</span>
+<span class="fc" id="L41">            Anggota anggota = mapper.map(registerRequest,Anggota.class);</span>
+<span class="fc" id="L42">            anggota.setNik(Long.valueOf(registerRequest.getUsername()));</span>
+<span class="fc" id="L43">            anggotaRepository.save(anggota);</span>
+<span class="fc" id="L44">            regis.setLibrarian(null);</span>
+<span class="fc" id="L45">            regis.setAnggota(anggota);</span>
+        }
+        //save username dan pw ke tabel user
+
+<span class="fc" id="L49">        userRepository.save(regis);</span>
+<span class="fc" id="L50">        return regis;</span>
+    }
+    @Bean
+    public PasswordEncoder passwordEncoder() {
+<span class="fc" id="L54">        return new BCryptPasswordEncoder();</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

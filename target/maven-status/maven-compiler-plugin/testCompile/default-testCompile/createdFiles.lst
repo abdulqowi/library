@@ -1,0 +1,17 @@
+com\miniproject\library\service\LibrarianServiceTest.class
+com\miniproject\library\controller\BookControllerTest.class
+com\miniproject\library\controller\UserControllerTest.class
+com\miniproject\library\service\BookServiceTest.class
+com\miniproject\library\service\LoanServiceTest.class
+com\miniproject\library\controller\LoanControllerTest.class
+com\miniproject\library\controller\CategoryControllerTest.class
+com\miniproject\library\service\UserServiceTest.class
+com\miniproject\library\service\RegisterServiceTest.class
+com\miniproject\library\service\LoginServiceTest.class
+com\miniproject\library\service\CategoryServiceTest.class
+com\miniproject\library\service\AnggotaServiceTest.class
+com\miniproject\library\LibraryApplicationTest.class
+com\miniproject\library\controller\AnggotaControllerTest.class
+com\miniproject\library\service\PenaltyServiceTest.class
+com\miniproject\library\controller\PenaltyControllerTest.class
+com\miniproject\library\controller\LibrarianControllerTest.class

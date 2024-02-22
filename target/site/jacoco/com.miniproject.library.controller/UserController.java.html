@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>UserController.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">library</a> &gt; <a href="index.source.html" class="el_package">com.miniproject.library.controller</a> &gt; <span class="el_source">UserController.java</span></div><h1>UserController.java</h1><pre class="source lang-java linenums">package com.miniproject.library.controller;
+
+import com.miniproject.library.dto.login.LoginRequest;
+import com.miniproject.library.dto.login.LoginResponse;
+import com.miniproject.library.dto.register.RegisterRequest;
+import com.miniproject.library.dto.user.UserRequest;
+import com.miniproject.library.dto.user.UserResponse;
+import com.miniproject.library.entity.User;
+import com.miniproject.library.service.LoginService;
+import com.miniproject.library.service.RegisterService;
+import com.miniproject.library.service.UserService;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+
+@RestController
+<span class="fc" id="L23">@RequiredArgsConstructor</span>
+@Tag(name = &quot;Users&quot;)
+@RequestMapping(&quot;/users&quot;)
+public class UserController {
+    private final UserService userService;
+
+    private final RegisterService registerService;
+
+    private final LoginService loginService;
+
+    @PutMapping(&quot;/edit-{id}&quot;)
+    public ResponseEntity&lt;UserResponse&gt; updateUser(@PathVariable Integer id, @Valid @RequestBody UserRequest userRequest) {
+<span class="fc" id="L35">            UserResponse updatedUser = userService.updateById(id, userRequest);</span>
+<span class="fc" id="L36">            return ResponseEntity.ok(updatedUser);</span>
+    }
+
+    @GetMapping(&quot;/all&quot;)
+    public ResponseEntity&lt;List&lt;UserResponse&gt;&gt; getAllUsers() {
+<span class="fc" id="L41">        List&lt;UserResponse&gt; users = userService.getAll();</span>
+<span class="fc" id="L42">        return ResponseEntity.ok(users);</span>
+    }
+
+    @GetMapping(&quot;/{id}&quot;)
+    public ResponseEntity&lt;UserResponse&gt; getUserById(@PathVariable Integer id) {
+<span class="fc" id="L47">            UserResponse user = userService.getById(id);</span>
+<span class="fc" id="L48">            return ResponseEntity.ok(user);</span>
+    }
+
+    @DeleteMapping(&quot;/delete-{id}&quot;)
+    public ResponseEntity&lt;String&gt; deleteUser(@PathVariable Integer id){
+<span class="fc" id="L53">        userService.deleteById(id);</span>
+<span class="fc" id="L54">        return ResponseEntity.ok(&quot;User deleted successfully&quot;);</span>
+    }
+
+    @PostMapping(&quot;/register/{role}&quot;)
+    public ResponseEntity&lt;User&gt; register(@Valid @RequestBody RegisterRequest request,@PathVariable String role){
+<span class="fc" id="L59">        User response = registerService.register(request,role);</span>
+<span class="fc" id="L60">        return new ResponseEntity&lt;&gt;(response, HttpStatus.CREATED);</span>
+    }
+
+    @PostMapping(&quot;/login&quot;)
+    public ResponseEntity&lt;LoginResponse&gt; login(@Valid @RequestBody LoginRequest request, @RequestHeader HttpHeaders headers ){
+<span class="fc" id="L65">        LoginResponse response = loginService.login(request);</span>
+<span class="fc" id="L66">        headers.add(HttpHeaders.AUTHORIZATION, &quot;Bearer &quot; + response.getToken());</span>
+<span class="fc" id="L67">        return ResponseEntity.ok(response);</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

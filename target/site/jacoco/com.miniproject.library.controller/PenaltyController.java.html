@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>PenaltyController.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">library</a> &gt; <a href="index.source.html" class="el_package">com.miniproject.library.controller</a> &gt; <span class="el_source">PenaltyController.java</span></div><h1>PenaltyController.java</h1><pre class="source lang-java linenums">package com.miniproject.library.controller;
+
+import com.miniproject.library.dto.penalty.PenaltyResponse;
+import com.miniproject.library.entity.Loan;
+import com.miniproject.library.entity.Penalty;
+import com.miniproject.library.repository.LoanRepository;
+import com.miniproject.library.service.PenaltyService;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
+import java.util.List;
+import java.util.Optional;
+
+@CrossOrigin
+@RestController
+<span class="fc" id="L19">@RequiredArgsConstructor</span>
+@Tag(name = &quot;Penalty&quot;)
+@RequestMapping(&quot;/penalty&quot;)
+public class PenaltyController {
+    private final PenaltyService penaltyService;
+    private final LoanRepository loanRepository;
+
+    @GetMapping(&quot;/all&quot;)
+    public ResponseEntity&lt;List&lt;Penalty&gt;&gt; getAllPenalties() {
+<span class="fc" id="L28">        List&lt;Penalty&gt; penalties = penaltyService.getAllPenalties();</span>
+<span class="fc" id="L29">        return ResponseEntity.ok(penalties);</span>
+    }
+
+    @PostMapping
+    public ResponseEntity&lt;PenaltyResponse&gt; createPenalty(@RequestParam Integer loanId, @RequestParam Integer amount) {
+<span class="fc" id="L34">        Optional&lt;Loan&gt; optionalLoan = loanRepository.findById(loanId);</span>
+<span class="fc bfc" id="L35" title="All 2 branches covered.">        if (optionalLoan.isPresent()) {</span>
+<span class="fc" id="L36">            Loan loan = optionalLoan.get();</span>
+<span class="fc" id="L37">            PenaltyResponse response = penaltyService.createPenalty(loan, amount);</span>
+<span class="fc" id="L38">            return ResponseEntity.ok(response);</span>
+        } else {
+<span class="fc" id="L40">            throw new ResponseStatusException(HttpStatus.NOT_FOUND, &quot;Loan with ID &quot; + loanId + &quot; not found.&quot;);</span>
+        }
+    }
+
+    @GetMapping(&quot;/{id}&quot;)
+    public ResponseEntity&lt;PenaltyResponse&gt; getPenaltyById(@PathVariable Integer id) {
+<span class="fc" id="L46">        PenaltyResponse response = penaltyService.getPenaltyById(id);</span>
+<span class="fc" id="L47">        return ResponseEntity.ok(response);</span>
+    }
+
+    @DeleteMapping(&quot;/{id}&quot;)
+    public ResponseEntity&lt;String&gt; deletePenalty(@PathVariable Integer id) {
+<span class="fc" id="L52">        penaltyService.deletePenalty(id);</span>
+<span class="fc" id="L53">        return ResponseEntity.ok(&quot;Penalty with ID &quot; + id + &quot; deleted successfully.&quot;);</span>
+    }
+
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

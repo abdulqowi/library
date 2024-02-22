@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>LoginService.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">library</a> &gt; <a href="index.source.html" class="el_package">com.miniproject.library.service</a> &gt; <span class="el_source">LoginService.java</span></div><h1>LoginService.java</h1><pre class="source lang-java linenums">package com.miniproject.library.service;
+
+import com.miniproject.library.security.UserDetailServiceImpl;
+import com.miniproject.library.dto.login.LoginRequest;
+import com.miniproject.library.dto.login.LoginResponse;
+import com.miniproject.library.entity.User;
+import com.miniproject.library.repository.UserRepository;
+import com.miniproject.library.util.JwtToken;
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
+
+@Service
+<span class="fc" id="L19">@RequiredArgsConstructor</span>
+public class LoginService {
+    private final UserRepository userRepository;
+    private final UserDetailServiceImpl userDetailService;
+
+    public LoginResponse login(@Valid LoginRequest userRequest){
+<span class="fc" id="L25">        UserDetails userDetails = userDetailService.loadUserByUsername(userRequest.getUsername());</span>
+
+<span class="fc" id="L27">        String password = userRequest.getPassword();</span>
+<span class="fc" id="L28">        String password2 = userDetails.getPassword();</span>
+<span class="fc bfc" id="L29" title="All 2 branches covered.">        if (!passwordEncoder().matches(password, password2)) {</span>
+<span class="fc" id="L30">            throw new BadCredentialsException(&quot;Invalid password&quot;);</span>
+        }
+<span class="fc" id="L32">        UsernamePasswordAuthenticationToken.authenticated(userDetails,userDetails.isCredentialsNonExpired(),userDetails.getAuthorities());</span>
+<span class="fc" id="L33">        User user = userRepository.findByUsername(userDetails.getUsername());</span>
+<span class="fc" id="L34">        String token = JwtToken.getToken(user);</span>
+<span class="fc" id="L35">        String username = user.getUsername();</span>
+<span class="fc" id="L36">        LoginResponse response = new LoginResponse();</span>
+<span class="fc" id="L37">        response.setUsername(username);</span>
+<span class="fc" id="L38">        response.setRoles(userDetails.getAuthorities().toString());</span>
+<span class="fc" id="L39">        response.setToken(token);</span>
+<span class="fc" id="L40">        return response;</span>
+    }
+    public PasswordEncoder passwordEncoder() {
+<span class="fc" id="L43">        return new BCryptPasswordEncoder();</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

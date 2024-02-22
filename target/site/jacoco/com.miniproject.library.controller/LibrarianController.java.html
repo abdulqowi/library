@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>LibrarianController.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">library</a> &gt; <a href="index.source.html" class="el_package">com.miniproject.library.controller</a> &gt; <span class="el_source">LibrarianController.java</span></div><h1>LibrarianController.java</h1><pre class="source lang-java linenums">package com.miniproject.library.controller;
+
+import com.miniproject.library.dto.librarian.LibrarianRequest;
+import com.miniproject.library.dto.librarian.LibrarianResponse;
+import com.miniproject.library.entity.Librarian;
+import com.miniproject.library.service.LibrarianService;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+
+@CrossOrigin
+@RestController
+<span class="fc" id="L17">@RequiredArgsConstructor</span>
+@Tag(name = &quot;Librarian&quot;)
+@RequestMapping(&quot;/librarian&quot;)
+public class LibrarianController {
+    private final LibrarianService librarianService;
+
+    @PutMapping(&quot;/edit-{id}&quot;)
+    public ResponseEntity&lt;LibrarianResponse&gt; updateLibrarian(@PathVariable Integer id, @Valid
+    @RequestBody LibrarianRequest request){
+<span class="fc" id="L26">        LibrarianResponse librarianResponse = librarianService.updateLibrarian(request, id);</span>
+<span class="fc" id="L27">        return ResponseEntity.ok(librarianResponse);</span>
+    }
+
+    @GetMapping(&quot;/all&quot;)
+    public ResponseEntity&lt;List&lt;Librarian&gt;&gt; getAllLibrarian(){
+<span class="fc" id="L32">        List&lt;Librarian&gt; librarians = librarianService.getAllLibrarian();</span>
+<span class="fc" id="L33">        return ResponseEntity.ok(librarians);</span>
+    }
+
+    @GetMapping(&quot;/{id}&quot;)
+    public ResponseEntity&lt;Librarian&gt; getLibrarianById(@PathVariable Integer id){
+<span class="fc" id="L38">        Librarian librarian = librarianService.getLibrarianById(id);</span>
+<span class="fc" id="L39">        return ResponseEntity.ok(librarian);</span>
+    }
+
+    @DeleteMapping(&quot;/delete-{id}&quot;)
+    public ResponseEntity&lt;Void&gt; deleteLibrarianById(@PathVariable Integer id){
+<span class="fc" id="L44">        librarianService.deleteLibrarianById(id);</span>
+<span class="fc" id="L45">        return ResponseEntity.noContent().build();</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

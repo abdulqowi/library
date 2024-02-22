@@ -1,0 +1,177 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>LoanService.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">library</a> &gt; <a href="index.source.html" class="el_package">com.miniproject.library.service</a> &gt; <span class="el_source">LoanService.java</span></div><h1>LoanService.java</h1><pre class="source lang-java linenums">package com.miniproject.library.service;
+
+import com.miniproject.library.dto.bookcart.BookCartRequest;
+import com.miniproject.library.dto.loan.LoanResponse;
+import com.miniproject.library.entity.*;
+import com.miniproject.library.exception.ResourceNotFoundException;
+import com.miniproject.library.repository.*;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
+
+import java.util.*;
+import java.util.concurrent.TimeUnit;
+
+@Service
+<span class="fc" id="L17">@RequiredArgsConstructor</span>
+public class LoanService {
+    private final LoanRepository loanRepository;
+
+    private final AnggotaRepository anggotaRepository;
+
+    private final BookCartRepository bookCartRepository;
+
+    private final BookRepository bookRepository;
+
+    private final PenaltyService penaltyService;
+
+    private static final String ID_ANGGOTA_NOT_FOUND = &quot;Id Anggota Not Found&quot;;
+    private static final String BOOK_OUT_OF_STOCK = &quot;Book Out of Stock&quot;;
+    private static final String ID_BOOK_CART_NOT_FOUND = &quot;Id Bookcart Not Found&quot;;
+
+    public boolean hasUnreturnedBooks(Integer anggotaId) {
+<span class="fc" id="L34">        Optional&lt;Loan&gt; unreturnedLoan = loanRepository.findLoanAnggota(anggotaId);</span>
+<span class="fc" id="L35">        return unreturnedLoan.isPresent();</span>
+    }
+
+    public LoanResponse borrowBooks(BookCartRequest bookCartRequest){
+
+<span class="pc bpc" id="L40" title="1 of 2 branches missed.">        if (hasUnreturnedBooks(bookCartRequest.getAnggotaId())) {</span>
+<span class="nc" id="L41">            throw new IllegalStateException(&quot;Anda masih memiliki buku yang belum dikembalikan.&quot;);</span>
+        }
+
+<span class="fc" id="L44">        Anggota anggota = anggotaRepository.findById(bookCartRequest.getAnggotaId()).orElseThrow(() -&gt;</span>
+<span class="fc" id="L45">                new ResourceNotFoundException(ID_ANGGOTA_NOT_FOUND));</span>
+
+<span class="fc" id="L47">        List&lt;Book&gt; books = bookRepository.findAllById(bookCartRequest.getBookIds());</span>
+<span class="fc" id="L48">        List&lt;Book&gt; availableBooks = getAvailableBook(books);</span>
+
+<span class="fc bfc" id="L50" title="All 2 branches covered.">        if (availableBooks.isEmpty()){</span>
+<span class="fc" id="L51">            increaseWishList(books);</span>
+<span class="fc" id="L52">            throw new ResourceNotFoundException(BOOK_OUT_OF_STOCK);</span>
+        }
+
+        //create BookCart
+<span class="fc" id="L56">        BookCart bookCart = new BookCart();</span>
+<span class="fc" id="L57">        bookCart.setAnggota(anggota);</span>
+<span class="fc" id="L58">        bookCart.setBook(availableBooks);</span>
+<span class="fc" id="L59">        bookCartRepository.save(bookCart);</span>
+
+        //create Loan
+<span class="fc" id="L62">        Loan loan = new Loan();</span>
+<span class="fc" id="L63">        loan.setDateBorrow(new Date());</span>
+<span class="fc" id="L64">        loan.setDueBorrow(calculateDueDate());</span>
+<span class="fc" id="L65">        loan.setBookCarts(bookCartRepository.findById(bookCart.getId()).orElseThrow(() -&gt;</span>
+<span class="nc" id="L66">                new ResourceNotFoundException(ID_BOOK_CART_NOT_FOUND)));</span>
+<span class="fc" id="L67">        loanRepository.save(loan);</span>
+
+        //update data BookStock dan Jumlah Baca
+<span class="fc" id="L70">        updateBookStockAndRead(availableBooks, true);</span>
+
+<span class="fc" id="L72">        return LoanResponse.builder()</span>
+<span class="fc" id="L73">                .id(loan.getId())</span>
+<span class="fc" id="L74">                .bookCartId(loan.getBookCarts().getId())</span>
+<span class="fc" id="L75">                .dateBorrow(loan.getDateBorrow())</span>
+<span class="fc" id="L76">                .dueBorrow(loan.getDueBorrow())</span>
+<span class="fc" id="L77">                .build();</span>
+    }
+
+    private List&lt;Book&gt; getAvailableBook(List&lt;Book&gt; booksToBorrow){
+<span class="fc" id="L81">        return booksToBorrow.stream()</span>
+<span class="fc bfc" id="L82" title="All 2 branches covered.">                .filter(book -&gt; book.getStock() &gt; 0)</span>
+<span class="fc" id="L83">                .toList();</span>
+    }
+
+    private void increaseWishList(List&lt;Book&gt; books){
+<span class="fc bfc" id="L87" title="All 2 branches covered.">        for (Book book : books){</span>
+<span class="fc" id="L88">            Integer currentWishlist = book.getWishlist();</span>
+<span class="pc bpc" id="L89" title="1 of 2 branches missed.">            book.setWishlist(currentWishlist != null ? book.getWishlist() + 1 : 1);</span>
+<span class="fc" id="L90">            bookRepository.save(book);</span>
+<span class="fc" id="L91">        }</span>
+<span class="fc" id="L92">    }</span>
+
+    private void updateBookStockAndRead(List&lt;Book&gt; books, boolean increaseRead){
+<span class="fc bfc" id="L95" title="All 2 branches covered.">        for (Book book : books){</span>
+<span class="fc bfc" id="L96" title="All 2 branches covered.">            if (increaseRead){</span>
+                //kurang stock
+<span class="fc" id="L98">                book.setStock(book.getStock() - 1);</span>
+                //tambah jumlah baca
+<span class="fc" id="L100">                Integer currentRead = book.getRead();</span>
+<span class="pc bpc" id="L101" title="1 of 2 branches missed.">                book.setRead(currentRead != null ? book.getRead() + 1 : 1);</span>
+<span class="fc" id="L102">            } else {</span>
+                //tambah stock
+<span class="fc" id="L104">                Integer currentStock = book.getStock();</span>
+<span class="pc bpc" id="L105" title="1 of 2 branches missed.">                book.setStock(currentStock != null ? book.getStock() + 1 : 1);</span>
+            }
+<span class="fc" id="L107">            bookRepository.save(book);</span>
+<span class="fc" id="L108">        }</span>
+<span class="fc" id="L109">    }</span>
+
+    private Date calculateDueDate(){
+        // 7 hari dari waktu peminjaman
+<span class="fc" id="L113">        return new Date(System.currentTimeMillis() + (7 * 24 * 60 * 60 * 1000));</span>
+    }
+
+    public LoanResponse returnBooks(Integer loanId, List&lt;Integer&gt; bookIdsReturned, boolean isDamagedOrLost) {
+<span class="fc" id="L117">        Loan loan = loanRepository.findById(loanId)</span>
+<span class="fc" id="L118">                .orElseThrow(() -&gt; new ResponseStatusException(HttpStatus.NOT_FOUND, &quot;Loan ID not found&quot;));</span>
+
+<span class="fc" id="L120">        Date currentDate = new Date();</span>
+
+<span class="fc bfc" id="L122" title="All 2 branches covered.">        if (currentDate.after(loan.getDueBorrow())) {</span>
+<span class="fc" id="L123">            long diffInMillies = Math.abs(currentDate.getTime() - loan.getDueBorrow().getTime());</span>
+<span class="fc" id="L124">            long diff = TimeUnit.DAYS.convert(diffInMillies, TimeUnit.MILLISECONDS);</span>
+<span class="fc" id="L125">            Integer overdueFine = Math.toIntExact(diff * 50000);</span>
+
+<span class="fc" id="L127">            penaltyService.createPenalty(loan, overdueFine);</span>
+        }
+
+<span class="fc bfc" id="L130" title="All 2 branches covered.">        if (isDamagedOrLost) {</span>
+<span class="fc" id="L131">            Integer damagedOrLostFine = 5000000;</span>
+<span class="fc" id="L132">            penaltyService.createPenalty(loan, damagedOrLostFine);</span>
+        }
+
+<span class="fc" id="L135">        BookCart bookCart = loan.getBookCarts();</span>
+<span class="fc" id="L136">        List&lt;Book&gt; returnedBooks = bookCart.getBook();</span>
+
+        // Memastikan setiap buku yang dikembalikan diverifikasi secara individu
+<span class="fc bfc" id="L139" title="All 2 branches covered.">        for (Integer bookId : bookIdsReturned) {</span>
+<span class="fc" id="L140">            boolean foundBook = false;</span>
+<span class="pc bpc" id="L141" title="1 of 2 branches missed.">            for (Book book : returnedBooks) {</span>
+<span class="pc bpc" id="L142" title="1 of 2 branches missed.">                if (book.getId().equals(bookId)) {</span>
+<span class="fc" id="L143">                    foundBook = true;</span>
+<span class="fc" id="L144">                    break;</span>
+                }
+<span class="nc" id="L146">            }</span>
+<span class="pc bpc" id="L147" title="1 of 2 branches missed.">            if (!foundBook) {</span>
+<span class="nc" id="L148">                throw new IllegalArgumentException(&quot;Buku dengan ID &quot; + bookId + &quot; tidak ditemukan dalam daftar peminjaman.&quot;);</span>
+            }
+<span class="fc" id="L150">        }</span>
+
+        // Update stok buku yang dikembalikan
+<span class="fc" id="L153">        List&lt;Book&gt; booksToReturn = returnedBooks.stream()</span>
+<span class="fc" id="L154">                .filter(book -&gt; bookIdsReturned.contains(book.getId()))</span>
+<span class="fc" id="L155">                .toList();</span>
+
+<span class="fc" id="L157">        updateBookStockAndRead(booksToReturn, false);</span>
+
+<span class="fc" id="L159">        loan.setDateReturn(currentDate);</span>
+<span class="fc" id="L160">        loanRepository.delete(loan);</span>
+
+<span class="fc" id="L162">        return LoanResponse.builder()</span>
+<span class="fc" id="L163">                .id(loan.getId())</span>
+<span class="fc" id="L164">                .dateBorrow(loan.getDateBorrow())</span>
+<span class="fc" id="L165">                .dateReturn(currentDate)</span>
+<span class="fc" id="L166">                .dueBorrow(loan.getDueBorrow())</span>
+<span class="fc" id="L167">                .bookCartId(bookCart.getId())</span>
+<span class="fc" id="L168">                .build();</span>
+    }
+
+    public Integer getLoanIdByAnggotaId(Integer id) {
+<span class="fc" id="L172">        Optional&lt;Loan&gt; loan = loanRepository.findLoanAnggota(id);</span>
+<span class="fc" id="L173">        return loan.map(Loan::getId).orElse(null);</span>
+    }
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>BookController.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">library</a> &gt; <a href="index.source.html" class="el_package">com.miniproject.library.controller</a> &gt; <span class="el_source">BookController.java</span></div><h1>BookController.java</h1><pre class="source lang-java linenums">package com.miniproject.library.controller;
+
+import com.miniproject.library.dto.book.BookRequest;
+import com.miniproject.library.dto.book.BookResponse;
+import com.miniproject.library.entity.Book;
+import com.miniproject.library.util.BookReport;
+import com.miniproject.library.service.BookService;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+
+@CrossOrigin
+@RestController
+<span class="fc" id="L21">@RequiredArgsConstructor</span>
+@Tag(name = &quot;Book&quot;)
+@RequestMapping(&quot;/book&quot;)
+public class BookController {
+    private final BookService bookService;
+
+    @PostMapping
+    public ResponseEntity&lt;BookResponse&gt; addBook(@RequestBody BookRequest request){
+<span class="fc" id="L29">        BookResponse bookResponse = bookService.addBook(request);</span>
+<span class="fc" id="L30">        return new ResponseEntity&lt;&gt;(bookResponse, HttpStatus.CREATED);</span>
+    }
+
+    @PutMapping(&quot;/edit/{id}&quot;)
+    public ResponseEntity&lt;BookResponse&gt; updateBook(@PathVariable Integer id, @Valid
+    @RequestBody BookRequest request){
+<span class="fc" id="L36">        BookResponse bookResponse = bookService.updateBook(request, id);</span>
+<span class="fc" id="L37">        return ResponseEntity.ok(bookResponse);</span>
+    }
+
+    @GetMapping(&quot;/all&quot;)
+    public ResponseEntity&lt;List&lt;Book&gt;&gt; getAllBook(){
+<span class="fc" id="L42">        List&lt;Book&gt; books = bookService.getAllBook();</span>
+<span class="fc" id="L43">        return ResponseEntity.ok(books);</span>
+    }
+
+    @GetMapping(&quot;/{id}&quot;)
+    public ResponseEntity&lt;Book&gt; getBookById(@PathVariable Integer id){
+<span class="fc" id="L48">        Book book = bookService.getBookByIdBook(id);</span>
+<span class="fc" id="L49">        return ResponseEntity.ok(book);</span>
+    }
+
+    @GetMapping
+    public ResponseEntity&lt;byte[]&gt; generateBookReport() {
+<span class="nc" id="L54">            List&lt;Book&gt; bookList = bookService.getAllBook();</span>
+<span class="nc" id="L55">            BookReport pdfService = new BookReport();</span>
+<span class="nc" id="L56">            byte[] pdfContent = pdfService.generateBookReport(bookList);</span>
+
+<span class="nc" id="L58">            HttpHeaders headers = new HttpHeaders();</span>
+<span class="nc" id="L59">            headers.setContentType(MediaType.APPLICATION_PDF);</span>
+<span class="nc" id="L60">            headers.setContentDispositionFormData(&quot;attachment&quot;, &quot;BookReport.pdf&quot;);</span>
+
+<span class="nc" id="L62">            return new ResponseEntity&lt;&gt;(pdfContent, headers, HttpStatus.OK);</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

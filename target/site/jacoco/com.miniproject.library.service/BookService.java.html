@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>BookService.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">library</a> &gt; <a href="index.source.html" class="el_package">com.miniproject.library.service</a> &gt; <span class="el_source">BookService.java</span></div><h1>BookService.java</h1><pre class="source lang-java linenums">package com.miniproject.library.service;
+
+import com.miniproject.library.dto.book.BookRequest;
+import com.miniproject.library.dto.book.BookResponse;
+import com.miniproject.library.entity.Book;
+import com.miniproject.library.entity.Category;
+import com.miniproject.library.exception.ResourceNotFoundException;
+import com.miniproject.library.repository.BookRepository;
+import com.miniproject.library.repository.CategoryRepository;
+import lombok.RequiredArgsConstructor;
+import org.modelmapper.ModelMapper;
+import org.springframework.http.HttpStatus;
+import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
+import java.util.List;
+import java.util.Optional;
+
+
+@Service
+<span class="fc" id="L20">@RequiredArgsConstructor</span>
+public class BookService {
+
+    private final BookRepository bookRepository;
+    private final CategoryRepository categoryRepository;
+    private static final String ID_CATEGORY_NOT_FOUND = &quot;Id Category Not Found&quot;;
+    private static final String ID_BOOK_NOT_FOUND = &quot;Id Book Not Found&quot;;
+<span class="fc" id="L27">    private final ModelMapper mapper = new ModelMapper();</span>
+
+    public BookResponse addBook(BookRequest request){
+<span class="fc" id="L30">        Book book = new Book();</span>
+<span class="fc" id="L31">        Optional&lt;Category&gt; optionalCategory = categoryRepository.findById(request.getCategoryId());</span>
+<span class="fc bfc" id="L32" title="All 2 branches covered.">        if (optionalCategory.isPresent()){</span>
+<span class="fc" id="L33">            Category category = optionalCategory.get();</span>
+<span class="fc" id="L34">            book.setAuthor(request.getAuthor());</span>
+<span class="fc" id="L35">            book.setPublisher(request.getPublisher());</span>
+<span class="fc" id="L36">            book.setPublicationDate(request.getPublicationDate());</span>
+<span class="fc" id="L37">            book.setStock(request.getStock());</span>
+<span class="fc" id="L38">            book.setTitle(request.getTitle());</span>
+<span class="fc" id="L39">            book.setSummary(request.getSummary());</span>
+<span class="fc" id="L40">            book.setCategory(category);</span>
+<span class="fc" id="L41">            bookRepository.save(book);</span>
+
+<span class="fc" id="L43">            return mapper.map(book,BookResponse.class);</span>
+        }
+<span class="fc" id="L45">        throw new ResourceNotFoundException(ID_CATEGORY_NOT_FOUND);</span>
+    }
+
+    public BookResponse updateBook(BookRequest request, Integer id){
+<span class="fc" id="L49">        Optional&lt;Book&gt; optionalBook = bookRepository.findById(id);</span>
+<span class="fc" id="L50">        Optional&lt;Category&gt; optionalCategory = categoryRepository.findById(request.getCategoryId());</span>
+<span class="fc bfc" id="L51" title="All 4 branches covered.">        if (optionalBook.isPresent() &amp;&amp; optionalCategory.isPresent()){</span>
+<span class="fc" id="L52">            Book book = optionalBook.get();</span>
+<span class="fc" id="L53">            Category category = optionalCategory.get();</span>
+<span class="fc" id="L54">            book.setId(id);</span>
+<span class="fc" id="L55">            book.setAuthor(request.getAuthor());</span>
+<span class="fc" id="L56">            book.setPublisher(request.getPublisher());</span>
+<span class="fc" id="L57">            book.setPublicationDate(request.getPublicationDate());</span>
+<span class="fc" id="L58">            book.setStock(request.getStock());</span>
+<span class="fc" id="L59">            book.setTitle(request.getTitle());</span>
+<span class="fc" id="L60">            book.setSummary(request.getSummary());</span>
+<span class="fc" id="L61">            book.setCategory(category);</span>
+<span class="fc" id="L62">            bookRepository.save(book);</span>
+
+<span class="fc" id="L64">            return mapper.map(book,BookResponse.class);</span>
+        }
+<span class="fc" id="L66">        throw new ResourceNotFoundException(ID_BOOK_NOT_FOUND);</span>
+    }
+
+    public List&lt;Book&gt; getAllBook(){
+<span class="fc" id="L70">        return bookRepository.findAll();</span>
+    }
+
+    public Book getBookByIdBook(Integer id){
+<span class="fc" id="L74">        return bookRepository.findById(id).orElseThrow(() -&gt;</span>
+<span class="fc" id="L75">                new ResourceNotFoundException(ID_BOOK_NOT_FOUND));</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>
