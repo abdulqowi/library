@@ -83,3 +83,5 @@ o
 ?src/main/java/com/miniproject/library/dto/user/UserRequest.java,d\9\d9f3358ee557ee6ec1c85af057bbbb98452db60d
 w
 Gsrc/main/java/com/miniproject/library/dto/register/RegisterRequest.java,9\6\96c0ccb15d66118848977c9ae1c7f1afa6884e14
+7
+pom.xml,4\4\442292b8a7efeabbe4cc176709b833b1792140ec

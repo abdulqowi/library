@@ -16,5 +16,5 @@ public interface LoanRepository extends JpaRepository<Loan,Integer> {
             "WHERE a.id = :anggotaId " + 
             "AND l.dateReturn IS NULL " +
             "ORDER BY l.dateBorrow DESC")
-    Optional<Loan> findLoanAnggota(@Param("anggotaId") Integer anggotaId);
+    Optional<Integer> findLoanAnggota(@Param("anggotaId") Integer anggotaId);
 }

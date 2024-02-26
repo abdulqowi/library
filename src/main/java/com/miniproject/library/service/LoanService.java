@@ -31,7 +31,7 @@ public class LoanService {
     private static final String ID_BOOK_CART_NOT_FOUND = "Id Bookcart Not Found";
 
     public boolean hasUnreturnedBooks(Integer anggotaId) {
-        Optional<Loan> unreturnedLoan = loanRepository.findLoanAnggota(anggotaId);
+        Optional<Integer> unreturnedLoan = loanRepository.findLoanAnggota(anggotaId);
         return unreturnedLoan.isPresent();
     }
 
@@ -169,8 +169,8 @@ public class LoanService {
     }
 
     public Integer getLoanIdByAnggotaId(Integer id) {
-        Optional<Loan> loan = loanRepository.findLoanAnggota(id);
-        return loan.map(Loan::getId).orElse(null);
+        Optional<Integer> loan = loanRepository.findLoanAnggota(id);
+        return loan.orElse(null);
     }
 
 }

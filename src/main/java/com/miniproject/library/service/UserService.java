@@ -5,6 +5,7 @@ import com.miniproject.library.dto.user.UserBookResponse;
 import com.miniproject.library.dto.user.UserRequest;
 import com.miniproject.library.dto.user.UserResponse;
 import com.miniproject.library.entity.Anggota;
+import com.miniproject.library.entity.Book;
 import com.miniproject.library.entity.Loan;
 import com.miniproject.library.entity.User;
 import com.miniproject.library.exception.ResourceNotFoundException;
@@ -41,15 +42,20 @@ public class UserService {
         if (userOptional.isPresent()) {
             User user = userOptional.get();
             Anggota anggota = user.getAnggota();
-            Loan userLoan = loanRepository.findLoanAnggota(anggota.getId()).orElse(null);
-            UserResponse userResponse = new UserResponse();
-            userResponse.setId(user.getId());
-            userResponse.setUsername(user.getUsername());
-            userResponse.setAnggota(mapper.map(anggota, AnggotaResponse.class));
-            userResponse.setBook(mapper.map(userLoan.getBookCarts().getBook(), List.class));
-            return userResponse;
+            Optional<Integer> userLoan = loanRepository.findLoanAnggota(id);
+            if (userLoan.isPresent()) {
+                List<Integer> bookList = userLoan.stream().toList();
+                UserResponse userResponse = new UserResponse();
+                userResponse.setId(user.getId());
+                userResponse.setUsername(user.getUsername());
+                userResponse.setAnggota(mapper.map(anggota, AnggotaResponse.class));
+                userResponse.setBook(mapper.map(bookList, List.class));
+                return userResponse;
+            } else {
+                throw new ResourceNotFoundException("Loan not found for user with id: " + id);
+            }
         } else {
-            throw new ResourceNotFoundException(USER_NOT_FOUND);
+            throw new ResourceNotFoundException("User not found with id: " + id);
         }
     }
 
